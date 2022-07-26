@@ -20,9 +20,16 @@
             try {
 
                 spinner.style = "display: block;"
-
-                var holders = await find(domain);
-                console.log(holders)
+                const error = document.getElementById("error");
+                const progressbar = document.getElementById("myBar");
+                
+                var holders = await find(domain, (pct) => {
+                    progressbar.style = "display: block";
+                    error.innerHTML = "Fetching holders for " + domain + " assets";
+                    progressbar.style.width = pct + "%";
+                    spinner.style = "display: none;"
+                });
+                progressbar.style = "display: none";
 
                 var table = document.getElementById("tableHolders");
                 var csvContent = "data:text/csv;charset=utf-8," + "ASSET,HOLDERID,BALANCE\n"
@@ -42,7 +49,7 @@
                 link.setAttribute("href", encodedUri);
                 link.setAttribute("download", domain + "_" + new Date().toISOString() + ".csv");
                 link.innerHTML = "Export data";
-                document.getElementById("link").appendChild(link); 
+                document.getElementById("link").appendChild(link);
 
             } catch {
                 var err = document.getElementById("error");
@@ -76,6 +83,20 @@
         .table1 {
             background-color: #ffffff;
         }
+
+        #myProgress {
+            margin-top: 1em;
+            width: 100%;
+            background-color: #ddd;
+        }
+
+        #myBar {
+            display: none;
+            width: 0%;
+            height: 30px;
+            background-color: lightblue;
+            padding-top: 0.5em;
+        }
     </style>
 </head>
 
@@ -87,7 +108,9 @@
             <button type="submit">Find</button>
         </form>
     </div>
-
+    <div id="myProgress">
+        <div id="myBar"></div>
+      </div>
     <div id="spinner">
         <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
             <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>

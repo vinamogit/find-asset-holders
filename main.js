@@ -1,11 +1,14 @@
 
-var find = async (home_domain) => {
+var find = async (home_domain, makeProgress) => {
 
     const server = new StellarSdk.Server("https://horizon.stellar.org");
     var toml = await StellarSdk.StellarTomlResolver.resolve(home_domain);
 
     var output = [];
+    var total = toml.CURRENCIES.length;
+    var count = 0;
     for (var currency of toml.CURRENCIES) {
+        count++;
         let asset = new StellarSdk.Asset(currency.code, currency.issuer)
         let local = {
             asset: asset.toString(),
@@ -31,6 +34,8 @@ var find = async (home_domain) => {
             accounts.records = await accounts.next();
         }
         output.push(local);
+
+        makeProgress(count / total * 100);
     }
 
     return output;
