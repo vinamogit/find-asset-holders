@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Find asset holders by home domain</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='spinner.css'>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/9.1.0/stellar-sdk.min.js"
+        integrity="sha512-29ReeDE/g7IJWIy2da3122XVUvVdNDNoXGsmlcmn+CDODrPDT6DOeMQLZcsc3Eyh8RNwZ/XXrMfESF49Ck8usg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src='main.js' type="" module></script>
+    <script type="module">
+        const urlParams = new URLSearchParams(window.location.search);
+        let domain = urlParams.get('domain');
+        var spinner = document.getElementById("spinner");
+        if (domain) {
+
+            try {
+
+                spinner.style = "display: block;"
+
+                var holders = await find(domain);
+                console.log(holders)
+
+                var table = document.getElementById("tableHolders");
+                var csvContent = "data:text/csv;charset=utf-8," + "ASSET,HOLDERID,BALANCE\n"
+                var content = "<tr><th>Asset</th><th>Holder ID</th><th>Balance</th></tr>";
+                var i = 0;
+                for (var asset of holders) {
+                    i++;
+                    for (var h of asset.holders) {
+                        content += `<tr><td>${asset.asset}</td><td>${h.id}</td><td>${h.balance}</td></tr>`;
+                        csvContent += `${asset.asset},${h.id},${h.balance}` + "\n";
+                    }
+                }
+                table.innerHTML = content;
+
+                var encodedUri = encodeURI(csvContent);
+                var link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", domain + "_" + new Date().toISOString() + ".csv");
+                link.innerHTML = "Export data";
+                document.getElementById("link").appendChild(link); 
+
+            } catch {
+                var err = document.getElementById("error");
+                error.innerHTML = "<p><b>An error occured.</b></p>"
+            }
+        }
+
+        spinner.style = "display: none;"
+    </script>
+    <style>
+        html {
+            font-family: sans-serif;
+        }
+
+        td {
+            border: 1px solid black;
+        }
+
+        table {
+
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .table0 {
+            background-color: lightblue;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .table1 {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="" form>
+        <form action="#" method="get">
+            <label for="inputHomeDomain" id="labelHomeDomain">Asset home domain: </label>
+            <input name="domain" id="inputHomeDomain" type="text" placeholder="myname.litemint.store" width="40" />
+            <button type="submit">Find</button>
+        </form>
+    </div>
+
+    <div id="spinner">
+        <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+            <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+        </svg>
+    </div>
+    <div id="error"></div>
+    <div id="link"></div>
+    <div id="table">
+        <table id="tableHolders">
+
+        </table>
+    </div>
+</body>
+
+</html>
